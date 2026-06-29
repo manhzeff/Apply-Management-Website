@@ -1,0 +1,6 @@
+{
+  "name": "CareerFlow",
+  "description": "A beautiful and powerful developer-centric Job Application Tracker with a Kanban Board, Table View, Dashboard Analytics, and an AI Interview Prep Assistant.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
