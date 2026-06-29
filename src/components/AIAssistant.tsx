@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Sparkles, Mail, FileText, Check, Copy, AlertTriangle, ArrowRight, Brain, RefreshCw } from 'lucide-react';
 import { GoogleGenAI } from '@google/genai';
 import { JobApplication, UserProfile } from '../types';

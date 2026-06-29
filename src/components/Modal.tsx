@@ -269,6 +269,22 @@ export default function Modal({ isOpen, onClose, onSave, applicationToEdit, init
                       placeholder="Ví dụ: Vòng CV, Portfolio Review, System Design"
                       className="w-full bg-surface-lowest border border-outline-variant/50 rounded-lg px-4 py-2.5 text-sm font-sans text-on-surface placeholder:text-secondary/50 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all"
                     />
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {['HR Screen', 'Technical', 'Behavioral', 'System Design', 'Coding Test', 'Final Round'].map((suggestedRound) => (
+                        <button
+                          key={suggestedRound}
+                          type="button"
+                          onClick={() => setRound(suggestedRound)}
+                          className={`text-[10px] font-bold font-sans px-2.5 py-1 rounded-full border transition-all cursor-pointer ${
+                            round === suggestedRound
+                              ? 'bg-primary/10 text-primary border-primary/30 ring-1 ring-primary/20'
+                              : 'bg-surface-lowest text-secondary border-outline-variant/30 hover:border-secondary hover:text-on-surface'
+                          }`}
+                        >
+                          {suggestedRound}
+                        </button>
+                      ))}
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>

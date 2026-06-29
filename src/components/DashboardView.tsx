@@ -37,6 +37,14 @@ export default function DashboardView({
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
+  const handleMetricClick = (targetStatus: string) => {
+    if (statusFilter === targetStatus) {
+      setStatusFilter('');
+    } else {
+      setStatusFilter(targetStatus);
+    }
+  };
+
   // Compute stats dynamically
   const stats = useMemo(() => {
     return {
@@ -97,40 +105,47 @@ export default function DashboardView({
   };
 
   // Helper for status badge styling
-  const getStatusBadge = (status: ApplicationStatus) => {
+  const getStatusBadge = (status: ApplicationStatus, round?: string) => {
     switch (status) {
       case 'interviewing':
         return (
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-300 border border-blue-500/20">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-400 mr-2 animate-pulse"></span>
-            {STATUS_LABELS.interviewing}
-          </span>
+          <div className="flex flex-col gap-1 items-start">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-status-interviewing/10 text-status-interviewing border border-status-interviewing/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-status-interviewing mr-2 animate-pulse"></span>
+              {STATUS_LABELS.interviewing}
+            </span>
+            {round && (
+              <span className="text-[10px] text-tertiary font-bold bg-tertiary/10 border border-tertiary/20 px-2 py-0.5 rounded-full mt-0.5 max-w-[120px] truncate" title={round}>
+                {round}
+              </span>
+            )}
+          </div>
         );
       case 'applied':
         return (
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-secondary/10 text-secondary border border-secondary/20">
-            <span className="w-1.5 h-1.5 rounded-full bg-secondary/60 mr-2"></span>
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-status-applied/10 text-status-applied border border-status-applied/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-status-applied mr-2"></span>
             {STATUS_LABELS.applied}
           </span>
         );
       case 'offered':
         return (
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-2"></span>
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-status-offered/10 text-status-offered border border-status-offered/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-status-offered mr-2"></span>
             {STATUS_LABELS.offered}
           </span>
         );
       case 'wishlist':
         return (
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-300 border border-purple-500/20">
-            <span className="w-1.5 h-1.5 rounded-full bg-purple-400 mr-2"></span>
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-status-wishlist/10 text-status-wishlist border border-status-wishlist/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-status-wishlist mr-2"></span>
             {STATUS_LABELS.wishlist}
           </span>
         );
       case 'rejected':
         return (
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-error/10 text-error border border-error/20">
-            <span className="w-1.5 h-1.5 rounded-full bg-error mr-2"></span>
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-status-rejected/10 text-status-rejected border border-status-rejected/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-status-rejected mr-2"></span>
             {STATUS_LABELS.rejected}
           </span>
         );
@@ -155,7 +170,14 @@ export default function DashboardView({
       {/* Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 shrink-0">
         {/* Card 1: Total Applied */}
-        <div className="bg-surface-lowest border border-outline-variant/30 rounded-xl p-5 shadow-lg flex flex-col gap-3 relative overflow-hidden group hover:border-primary/50 transition-all duration-300">
+        <div
+          onClick={() => handleMetricClick('applied')}
+          className={`bg-surface-lowest border rounded-xl p-5 shadow-lg flex flex-col gap-3 relative overflow-hidden group hover:scale-[1.01] cursor-pointer hover:shadow-xl transition-all duration-300 ${
+            statusFilter === 'applied'
+              ? 'border-status-applied shadow-status-applied/5 ring-1 ring-status-applied/30 bg-surface-low'
+              : 'border-outline-variant/30 hover:border-status-applied/50'
+          }`}
+        >
           <div className="flex justify-between items-center text-secondary">
             <span className="text-xs font-bold uppercase tracking-wider font-sans">Đã ứng tuyển</span>
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
@@ -170,7 +192,14 @@ export default function DashboardView({
         </div>
 
         {/* Card 2: Active Interviews */}
-        <div className="bg-surface-lowest border border-outline-variant/30 rounded-xl p-5 shadow-lg flex flex-col gap-3 relative overflow-hidden group hover:border-primary/50 transition-all duration-300">
+        <div
+          onClick={() => handleMetricClick('interviewing')}
+          className={`bg-surface-lowest border rounded-xl p-5 shadow-lg flex flex-col gap-3 relative overflow-hidden group hover:scale-[1.01] cursor-pointer hover:shadow-xl transition-all duration-300 ${
+            statusFilter === 'interviewing'
+              ? 'border-status-interviewing shadow-status-interviewing/5 ring-1 ring-status-interviewing/30 bg-surface-low'
+              : 'border-outline-variant/30 hover:border-status-interviewing/50'
+          }`}
+        >
           <div className="flex justify-between items-center text-secondary">
             <span className="text-xs font-bold uppercase tracking-wider font-sans">Phỏng vấn hiện tại</span>
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
@@ -184,7 +213,14 @@ export default function DashboardView({
         </div>
 
         {/* Card 3: Offers Received */}
-        <div className="bg-surface-lowest border border-outline-variant/30 rounded-xl p-5 shadow-lg flex flex-col gap-3 relative overflow-hidden group hover:border-tertiary/50 transition-all duration-300">
+        <div
+          onClick={() => handleMetricClick('offered')}
+          className={`bg-surface-lowest border rounded-xl p-5 shadow-lg flex flex-col gap-3 relative overflow-hidden group hover:scale-[1.01] cursor-pointer hover:shadow-xl transition-all duration-300 ${
+            statusFilter === 'offered'
+              ? 'border-status-offered shadow-status-offered/5 ring-1 ring-status-offered/30 bg-surface-low'
+              : 'border-outline-variant/30 hover:border-status-offered/50'
+          }`}
+        >
           <div className="flex justify-between items-center text-secondary">
             <span className="text-xs font-bold uppercase tracking-wider font-sans">Lời mời nhận được (Offer)</span>
             <div className="w-8 h-8 rounded-lg bg-tertiary/10 flex items-center justify-center text-tertiary border border-tertiary/20 animate-pulse">
@@ -302,7 +338,7 @@ export default function DashboardView({
 
                       {/* Status badge */}
                       <td className="px-6 py-4.5 whitespace-nowrap">
-                        {getStatusBadge(app.status)}
+                        {getStatusBadge(app.status, app.round)}
                       </td>
 
                       {/* Date applied */}
@@ -344,12 +380,27 @@ export default function DashboardView({
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={5} className="text-center py-20 text-secondary">
-                      <div className="max-w-md mx-auto space-y-2">
-                        <p className="font-semibold text-on-surface-variant">Không tìm thấy hồ sơ ứng tuyển nào</p>
-                        <p className="text-xs text-secondary/85">
-                          Hãy thử điều chỉnh bộ lọc, thanh tìm kiếm hoặc tự thêm một hồ sơ mới.
+                    <td colSpan={5} className="px-6 py-20 text-center text-secondary">
+                      <div className="max-w-md mx-auto flex flex-col items-center justify-center p-8 border-2 border-dashed border-outline-variant/30 rounded-xl bg-surface/10 relative overflow-hidden group">
+                        {/* Glowing radial background */}
+                        <div className="absolute inset-0 bg-radial from-primary/5 to-transparent pointer-events-none group-hover:from-primary/10 transition-all duration-500" />
+                        
+                        <div className="w-12 h-12 rounded-full bg-surface-low border border-outline-variant/20 flex items-center justify-center text-secondary/60 mb-4 group-hover:text-primary transition-colors group-hover:scale-105 duration-300 relative">
+                          <span className="text-lg">📁</span>
+                        </div>
+
+                        <h3 className="font-bold text-base text-on-surface font-sans mb-1.5">Không tìm thấy hồ sơ ứng tuyển nào</h3>
+                        <p className="text-xs text-secondary/80 font-sans font-normal leading-relaxed mb-6">
+                          Hãy thử điều chỉnh bộ lọc, xóa từ khóa tìm kiếm hoặc bấm nút bên dưới để tạo hồ sơ ứng tuyển mới của bạn.
                         </p>
+                        
+                        <button
+                          onClick={onAddNewJob}
+                          className="px-4 py-2 bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-on-primary text-xs font-bold font-sans rounded-lg transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          Tạo hồ sơ mới
+                        </button>
                       </div>
                     </td>
                   </tr>

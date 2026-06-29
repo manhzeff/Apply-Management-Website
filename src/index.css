@@ -19,6 +19,12 @@
   --color-outline: #87929a;
   --color-outline-variant: #3e484f;
 
+  --color-status-wishlist: #c084fc;
+  --color-status-applied: #94a3b8;
+  --color-status-interviewing: #38bdf8;
+  --color-status-offered: #34d399;
+  --color-status-rejected: #f87171;
+
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }

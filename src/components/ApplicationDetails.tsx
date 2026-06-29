@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { ChevronLeft, Edit2, Trash2, Plus, Mail, Phone, Calendar, ClipboardList, MapPin, DollarSign, Clock, UserPlus, CheckCircle2, Sparkles } from 'lucide-react';
+import { ChevronLeft, Edit2, Trash2, Plus, Mail, Phone, Calendar, ClipboardList, MapPin, DollarSign, Clock, UserPlus, CheckCircle2, Sparkles, Check, X } from 'lucide-react';
 import { JobApplication, Contact, TimelineEvent, ApplicationStatus, STATUS_LABELS, LOCATION_LABELS, UserProfile } from '../types';
 import AIAssistant from './AIAssistant';
 
@@ -41,6 +41,10 @@ export default function ApplicationDetails({
   // Local Notes edit
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [notesText, setNotesText] = useState(application.notes || '');
+
+  // Local Round edit
+  const [isEditingRound, setIsEditingRound] = useState(false);
+  const [roundText, setRoundText] = useState(application.round || '');
 
   // Sub-tab for Left column details vs AI assistant
   const [detailTab, setDetailTab] = useState<'info' | 'ai'>('info');
@@ -124,6 +128,15 @@ export default function ApplicationDetails({
     setIsEditingNotes(false);
   };
 
+  // Save Round Handler
+  const handleSaveRound = () => {
+    onUpdateApplication({
+      ...application,
+      round: roundText.trim() || undefined,
+    });
+    setIsEditingRound(false);
+  };
+
   // Helpers
   const formatDate = (dateString: string) => {
     if (!dateString) return 'N/A';
@@ -137,15 +150,15 @@ export default function ApplicationDetails({
   const getStatusStyle = (status: ApplicationStatus) => {
     switch (status) {
       case 'interviewing':
-        return 'bg-blue-500/10 text-blue-300 border-blue-500/20';
+        return 'bg-status-interviewing/10 text-status-interviewing border-status-interviewing/20';
       case 'applied':
-        return 'bg-secondary/10 text-secondary border-secondary/20';
+        return 'bg-status-applied/10 text-status-applied border-status-applied/20';
       case 'offered':
-        return 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20';
+        return 'bg-status-offered/10 text-status-offered border-status-offered/20';
       case 'wishlist':
-        return 'bg-purple-500/10 text-purple-300 border-purple-500/20';
+        return 'bg-status-wishlist/10 text-status-wishlist border-status-wishlist/20';
       case 'rejected':
-        return 'bg-error/10 text-error border-error/20';
+        return 'bg-status-rejected/10 text-status-rejected border-status-rejected/20';
     }
   };
 
@@ -251,13 +264,81 @@ export default function ApplicationDetails({
                   {application.salaryRange || 'Chưa thỏa thuận'}
                 </span>
               </div>
-              <div className="space-y-1">
-                <span className="text-xs text-secondary font-semibold uppercase tracking-wider block">Vòng phỏng vấn</span>
-                <span className="text-sm font-sans font-medium text-on-surface flex items-center gap-1.5 mt-1">
-                  <Clock className="w-4 h-4 text-primary" />
-                  {application.round || 'N/A'}
-                </span>
-              </div>
+              {isEditingRound ? (
+                <div className="space-y-1.5 relative">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-secondary font-semibold uppercase tracking-wider block">Vòng phỏng vấn</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={handleSaveRound}
+                        className="text-primary hover:text-primary-fixed-dim transition-colors cursor-pointer"
+                        title="Lưu"
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setIsEditingRound(false)}
+                        className="text-secondary hover:text-on-surface transition-colors cursor-pointer"
+                        title="Hủy"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <input
+                      type="text"
+                      value={roundText}
+                      onChange={(e) => setRoundText(e.target.value)}
+                      placeholder="Nhập vòng..."
+                      className="w-full bg-surface-low border border-outline-variant/50 rounded px-2.5 py-1 text-xs font-sans text-on-surface placeholder:text-secondary/50 outline-none focus:border-primary"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSaveRound();
+                        if (e.key === 'Escape') setIsEditingRound(false);
+                      }}
+                    />
+                    <div className="flex flex-wrap gap-1 max-h-[50px] overflow-y-auto custom-scrollbar">
+                      {['HR Screen', 'Technical', 'Behavioral', 'System Design', 'Coding Test', 'Final Round'].map((suggestedRound) => (
+                        <button
+                          key={suggestedRound}
+                          type="button"
+                          onClick={() => setRoundText(suggestedRound)}
+                          className={`text-[9px] font-bold font-sans px-2 py-0.5 rounded border transition-all cursor-pointer ${
+                            roundText === suggestedRound
+                              ? 'bg-primary/10 text-primary border-primary/30'
+                              : 'bg-surface-lowest text-secondary border-outline-variant/30 hover:border-secondary hover:text-on-surface'
+                          }`}
+                        >
+                          {suggestedRound}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-1 relative group">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-secondary font-semibold uppercase tracking-wider block">Vòng phỏng vấn</span>
+                    {application.status === 'interviewing' && (
+                      <button
+                        onClick={() => {
+                          setRoundText(application.round || '');
+                          setIsEditingRound(true);
+                        }}
+                        className="text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer flex items-center gap-0.5"
+                        title="Sửa nhanh vòng phỏng vấn"
+                      >
+                        <Edit2 className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                  <span className="text-sm font-sans font-medium text-on-surface flex items-center gap-1.5 mt-1">
+                    <Clock className="w-4 h-4 text-primary" />
+                    {application.round || 'N/A'}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 

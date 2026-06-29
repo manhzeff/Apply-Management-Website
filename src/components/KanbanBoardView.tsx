@@ -30,12 +30,22 @@ export default function KanbanBoardView({
 }: KanbanBoardViewProps) {
   // Columns Definition
   const columns: { id: ApplicationStatus; label: string; colorClass: string }[] = [
-    { id: 'wishlist', label: 'Ý ĐỊNH / ƯỚC MƠ', colorClass: 'bg-secondary' },
-    { id: 'applied', label: 'ĐÃ NỘP ĐƠN', colorClass: 'bg-primary' },
-    { id: 'interviewing', label: 'PHỎNG VẤN', colorClass: 'bg-[#fbbf24]' },
-    { id: 'offered', label: 'NHẬN ĐỀ NGHỊ', colorClass: 'bg-[#34d399]' },
-    { id: 'rejected', label: 'BỊ TỪ CHỐI', colorClass: 'bg-error' },
+    { id: 'wishlist', label: 'Ý ĐỊNH / ƯỚC MƠ', colorClass: 'bg-status-wishlist' },
+    { id: 'applied', label: 'ĐÃ NỘP ĐƠN', colorClass: 'bg-status-applied' },
+    { id: 'interviewing', label: 'PHỎNG VẤN', colorClass: 'bg-status-interviewing' },
+    { id: 'offered', label: 'NHẬN ĐỀ NGHỊ', colorClass: 'bg-status-offered' },
+    { id: 'rejected', label: 'BỊ TỪ CHỐI', colorClass: 'bg-status-rejected' },
   ];
+
+  const getStatusStepIndex = (status: ApplicationStatus) => {
+    switch (status) {
+      case 'wishlist': return 0;
+      case 'applied': return 1;
+      case 'interviewing': return 2;
+      case 'offered': return 3;
+      default: return -1;
+    }
+  };
 
   // Group applications by status
   const groupedApps = useMemo(() => {
@@ -170,6 +180,7 @@ export default function KanbanBoardView({
                     colApps.map((app) => {
                       const isInterviewingActive = app.status === 'interviewing' && app.round;
                       const isRejected = app.status === 'rejected';
+                      const isInterviewing = app.status === 'interviewing';
 
                       return (
                         <div
@@ -178,8 +189,8 @@ export default function KanbanBoardView({
                           onDragStart={(e) => handleDragStart(e, app.id)}
                           onClick={() => onSelectApplication(app)}
                           className={`bg-surface-lowest border ${
-                            isInterviewingActive
-                              ? 'border-primary shadow-lg shadow-primary/5 ring-1 ring-primary/20'
+                            isInterviewing
+                              ? 'border-status-interviewing shadow-lg shadow-status-interviewing/5 ring-1 ring-status-interviewing/20'
                               : 'border-outline-variant/40 hover:-translate-y-0.5 hover:shadow-md hover:border-outline transition-all duration-200 shadow-sm'
                           } ${
                             isRejected ? 'opacity-65 hover:opacity-100 transition-opacity' : ''
@@ -206,9 +217,58 @@ export default function KanbanBoardView({
                           </div>
 
                           {/* Role Name */}
-                          <p className="text-xs text-on-surface-variant font-medium mb-3">
+                          <p className="text-xs text-on-surface-variant font-medium mb-2">
                             {app.jobTitle}
                           </p>
+
+                          {/* Progress Timeline Tracker dots */}
+                          {app.status !== 'rejected' && (
+                            <div className="flex items-center gap-1.5 mt-1.5 mb-3.5 select-none">
+                              {[0, 1, 2, 3].map((stepIdx) => {
+                                const currentIdx = getStatusStepIndex(app.status);
+                                const isActive = stepIdx <= currentIdx;
+                                const stepColors = [
+                                  'bg-status-wishlist',
+                                  'bg-status-applied',
+                                  'bg-status-interviewing',
+                                  'bg-status-offered',
+                                ];
+                                return (
+                                  <React.Fragment key={stepIdx}>
+                                    {stepIdx > 0 && (
+                                      <div className={`h-0.5 flex-1 min-w-[8px] transition-all duration-300 ${
+                                        isActive ? stepColors[stepIdx] + '/30' : 'bg-outline-variant/20'
+                                      }`} />
+                                    )}
+                                    <div
+                                      className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                                        isActive ? stepColors[stepIdx] : 'bg-outline-variant/40'
+                                      }`}
+                                      title={
+                                        stepIdx === 0
+                                          ? 'Ý định / Ước mơ'
+                                          : stepIdx === 1
+                                          ? 'Đã nộp đơn'
+                                          : stepIdx === 2
+                                          ? 'Đang phỏng vấn'
+                                          : 'Nhận đề nghị (Offer)'
+                                      }
+                                    />
+                                  </React.Fragment>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          {app.status === 'rejected' && (
+                            <div className="flex items-center gap-1.5 mt-1.5 mb-3.5 select-none">
+                              <div className="w-1.5 h-1.5 rounded-full bg-status-rejected" />
+                              <div className="h-0.5 flex-1 min-w-[8px] bg-status-rejected/30" />
+                              <span className="text-[8px] font-bold text-status-rejected/80 uppercase tracking-wider">Đã dừng ứng tuyển</span>
+                              <div className="h-0.5 flex-1 min-w-[8px] bg-status-rejected/30" />
+                              <div className="w-1.5 h-1.5 rounded-full bg-status-rejected" />
+                            </div>
+                          )}
 
                           {/* Optional Badges, Interview Round Pills */}
                           {isInterviewingActive && (
@@ -222,28 +282,53 @@ export default function KanbanBoardView({
                           {/* Footer details */}
                           <div
                             className={`flex justify-between items-center mt-auto text-[10px] font-semibold text-secondary font-sans ${
-                              isInterviewingActive ? 'border-t border-outline-variant/20 pt-2.5 mt-2' : ''
+                              isInterviewing ? 'border-t border-outline-variant/20 pt-2.5 mt-2' : ''
                             }`}
                           >
-                            {/* Left Badge: Date tag */}
-                            <span className="bg-surface border border-outline-variant/10 px-2 py-0.5 rounded flex items-center gap-1 text-[10px]">
-                              {app.status === 'rejected' ? (
-                                <>Từ chối {formatShortDate(app.appliedDate)}</>
-                              ) : app.status === 'wishlist' ? (
-                                <>Đã thêm {formatShortDate(app.appliedDate)}</>
-                              ) : (
-                                <>Đã nộp {formatShortDate(app.appliedDate)}</>
+                            {/* Left Badge: Date tag & Contacts */}
+                            <div className="flex items-center gap-1.5">
+                              <span className="bg-surface border border-outline-variant/10 px-1.5 py-0.5 rounded flex items-center gap-1 text-[10px] shrink-0">
+                                {app.status === 'rejected' ? (
+                                  <>Từ chối {formatShortDate(app.appliedDate)}</>
+                                ) : app.status === 'wishlist' ? (
+                                  <>Đã thêm {formatShortDate(app.appliedDate)}</>
+                                ) : (
+                                  <>Đã nộp {formatShortDate(app.appliedDate)}</>
+                                )}
+                              </span>
+
+                              {/* Contact Monograms */}
+                              {app.contacts && app.contacts.length > 0 && (
+                                <div className="flex -space-x-1 overflow-hidden shrink-0">
+                                  {app.contacts.slice(0, 3).map((contact) => (
+                                    <div
+                                      key={contact.id}
+                                      className="w-4.5 h-4.5 rounded-full border border-surface-lowest bg-surface-high text-on-surface-variant font-bold text-[7px] flex items-center justify-center select-none cursor-help hover:text-primary transition-colors shrink-0"
+                                      title={`${contact.name} (${contact.role})${contact.email ? `\nEmail: ${contact.email}` : ''}${contact.phone ? `\nSĐT: ${contact.phone}` : ''}`}
+                                    >
+                                      {contact.name.charAt(0).toUpperCase()}
+                                    </div>
+                                  ))}
+                                  {app.contacts.length > 3 && (
+                                    <div
+                                      className="w-4.5 h-4.5 rounded-full border border-surface-lowest bg-surface-highest text-secondary font-bold text-[7px] flex items-center justify-center select-none shrink-0"
+                                      title={`Và ${app.contacts.length - 3} người liên hệ khác`}
+                                    >
+                                      +{app.contacts.length - 3}
+                                    </div>
+                                  )}
+                                </div>
                               )}
-                            </span>
+                            </div>
 
                             {/* Right Badge: Days in stage */}
-                            {isInterviewingActive ? (
-                              <span className="text-tertiary font-semibold flex items-center gap-1">
+                            {isInterviewing ? (
+                              <span className="text-tertiary font-semibold flex items-center gap-1 shrink-0">
                                 <Calendar className="w-3 h-3 text-tertiary" />
-                                {getDaysInStage(app.appliedDate)} ở giai đoạn này
+                                {getDaysInStage(app.appliedDate)}
                               </span>
                             ) : (
-                              <span className="text-secondary/80">
+                              <span className="text-secondary/80 shrink-0">
                                 {getDaysInStage(app.appliedDate)}
                               </span>
                             )}
